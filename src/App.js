@@ -174,7 +174,7 @@ export default function App() {
 
   return (
     <div style={containerStyle}>
-      <h1 style={titleStyle}>50音カウンター</h1>
+      <h1 style={titleStyle}>五十音かなカウンター</h1>
       
       <div style={gridContainerStyle}>
         {kanaTable.map((row, rowIndex) => (
