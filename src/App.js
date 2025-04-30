@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export default function App() {
   // 50音表（列順に並べ替え - 逆順：右側にあ行）
@@ -11,6 +11,34 @@ export default function App() {
   ];
 
   const [status, setStatus] = useState({});
+  const [cellSize, setCellSize] = useState(48); // デフォルトのセルサイズ
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  // 画面サイズに応じてセルサイズを調整
+  useEffect(() => {
+    const calculateSize = () => {
+      const padding = 48; // コンテナのパディング(左右)
+      const gap = 4; // セル間のギャップ
+      const columns = 11; // 最大列数
+      const availableWidth = window.innerWidth - padding;
+      const calculatedSize = Math.floor((availableWidth - (columns - 1) * gap) / columns);
+      
+      // 最小サイズと最大サイズを制限
+      const newSize = Math.max(30, Math.min(48, calculatedSize));
+      setCellSize(newSize);
+      setContainerWidth(window.innerWidth);
+    };
+
+    // 初期計算
+    calculateSize();
+    
+    // リサイズイベントのリスナー
+    window.addEventListener('resize', calculateSize);
+    
+    // クリーンアップ
+    return () => window.removeEventListener('resize', calculateSize);
+  }, []);
+
 
   const handleClick = (kana) => {
     if (kana === "　") return;
@@ -101,10 +129,11 @@ export default function App() {
   const counts = getStatusCounts();
 
   const containerStyle = {
-    padding: "24px",
+    padding: "12px",
     fontFamily: "sans-serif",
-    maxWidth: "800px",
-    margin: "0 auto"
+    maxWidth: "100%",
+    margin: "0 auto",
+    boxSizing: "border-box"
   };
 
   const titleStyle = {
@@ -114,7 +143,9 @@ export default function App() {
   };
 
   const gridContainerStyle = {
-    marginBottom: "24px"
+    marginBottom: "24px",
+    overflowX: "auto",
+    width: "100%"
   };
 
   const rowStyle = {
@@ -122,13 +153,11 @@ export default function App() {
     flexDirection: "row",
     justifyContent: "center",
     marginBottom: "8px",
-    gap: "4px"
+    gap: "4px",
+    flexWrap: "nowrap"
   };
 
   const buttonStyle = {
-    width: "48px",
-    height: "48px",
-    fontSize: "18px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -146,7 +175,8 @@ export default function App() {
     display: "flex",
     flexWrap: "wrap",
     alignItems: "center",
-    gap: "16px"
+    gap: "16px",
+    justifyContent: "center"
   };
 
   const statItemStyle = {
@@ -174,17 +204,26 @@ export default function App() {
 
   return (
     <div style={containerStyle}>
-      <h1 style={titleStyle}>五十音かなカウンター</h1>
+      <h1 style={titleStyle}>50音カウンター</h1>
       
       <div style={gridContainerStyle}>
         {kanaTable.map((row, rowIndex) => (
           <div key={rowIndex} style={rowStyle}>
             {row.map((kana, colIndex) => (
-              <div key={`${rowIndex}-${colIndex}`} style={{ display: "flex", flexDirection: "column", gap: "4px", width: "48px", height: "78px" }}>
+              <div key={`${rowIndex}-${colIndex}`} style={{ 
+                display: "flex", 
+                flexDirection: "column", 
+                gap: "4px", 
+                width: `${cellSize}px`, 
+                height: `${cellSize + 24}px`
+              }}>
                 <button
                   onClick={() => handleClick(kana)}
                   style={{
                     ...buttonStyle,
+                    width: `${cellSize}px`,
+                    height: `${cellSize}px`,
+                    fontSize: `${Math.max(16, Math.floor(cellSize * 0.4))}px`,
                     ...getButtonStyle(kana)
                   }}
                   disabled={kana === "　"}
@@ -195,7 +234,7 @@ export default function App() {
                   <button
                     onClick={() => handleUndo(kana)}
                     style={{
-                      width: "24px",
+                      width: `${Math.floor(cellSize * 0.5)}px`,
                       height: "20px",
                       fontSize: "12px",
                       margin: "0 auto",
@@ -240,9 +279,12 @@ export default function App() {
         </div>
       </div>
       
-      <div style={{ display: "flex", gap: "16px" }}>
+      <div style={{ display: "flex", gap: "16px", justifyContent: "center" }}>
         <button 
-          style={resetButtonStyle}
+          style={{
+            ...resetButtonStyle,
+            fontSize: `${Math.max(14, Math.floor(cellSize * 0.3))}px`,
+          }}
           onClick={handleReset}
           onMouseOver={(e) => e.target.style.backgroundColor = "#d1d5db"}
           onMouseOut={(e) => e.target.style.backgroundColor = "#e5e7eb"}
@@ -253,7 +295,8 @@ export default function App() {
           style={{
             ...resetButtonStyle,
             backgroundColor: "#fee2e2",
-            display: counts.count1 + counts.count2 === counts.total ? "block" : "none"
+            display: counts.count1 + counts.count2 === counts.total ? "block" : "none",
+            fontSize: `${Math.max(14, Math.floor(cellSize * 0.3))}px`,
           }}
           onMouseOver={(e) => e.target.style.backgroundColor = "#fecaca"}
           onMouseOut={(e) => e.target.style.backgroundColor = "#fee2e2"}
