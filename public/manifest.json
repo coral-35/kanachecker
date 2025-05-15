@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "かなチェッカー",
+  "name": "五十音かなチェッカー",
   "icons": [
     {
       "src": "favicon.ico",
